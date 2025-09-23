@@ -1,102 +1,237 @@
-import Image from "next/image";
+'use client';
+
+import React, { useState, useEffect } from 'react';
+import { VideoPlayer } from '@/components/VideoPlayer';
+import { VideoConverter } from '@/components/VideoConverter';
+import { useABTesting } from '@/hooks/useABTesting';
+import { useAnalytics } from '@/hooks/useAnalytics';
+import { StreamingConfig } from '@/types/player';
+
+const SAMPLE_VIDEOS = [
+  {
+    id: 'sample-1',
+    title: 'Sample Video 1 - MP4 (Reliable)',
+    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
+    isHLS: false,
+  },
+  {
+    id: 'sample-2', 
+    title: 'Sample Video 2 - HLS Stream',
+    url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
+    isHLS: true,
+  },
+  {
+    id: 'sample-3',
+    title: 'Sample Video 3 - MP4 (Elephants Dream)',
+    url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
+    isHLS: false,
+  },
+];
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const [selectedVideo, setSelectedVideo] = useState(SAMPLE_VIDEOS[0]);
+  const [showAnalytics, setShowAnalytics] = useState(false);
+  const [showConverter, setShowConverter] = useState(false);
+  
+  // A/B Testing
+  const { variant, testConfig, getFeatureFlag, trackEvent } = useABTesting('player_ui_v2');
+  const { getEvents } = useAnalytics();
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  // Enhanced streaming config based on A/B test
+  const streamingConfig: StreamingConfig = {
+    enableAdaptiveBitrate: true,
+    maxBitrate: getFeatureFlag('aggressive_abr') ? 8000000 : 5000000,
+    minBitrate: getFeatureFlag('aggressive_abr') ? 1000000 : 500000,
+    bufferSize: getFeatureFlag('buffer_optimization') ? 45 : 30,
+    qualityLevels: [],
+    abTestEnabled: true,
+    analyticsEnabled: true,
+  };
+
+  useEffect(() => {
+    if (testConfig) {
+      trackEvent('player_loaded', {
+        videoId: selectedVideo.id,
+        variant: variant,
+      });
+    }
+  }, [testConfig, selectedVideo.id, variant, trackEvent]);
+
+  const handleVideoChange = (video: typeof SAMPLE_VIDEOS[0]) => {
+    setSelectedVideo(video);
+    trackEvent('video_changed', {
+      videoId: video.id,
+      videoTitle: video.title,
+    });
+  };
+
+  const analyticsEvents = getEvents();
+
+  return (
+    <div className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <header className="bg-gray-800 border-b border-gray-700">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h1 className="text-2xl font-bold">Web TV Player</h1>
+              <p className="text-gray-400">Netflix-style streaming player with A/B testing</p>
+            </div>
+            <div className="flex items-center space-x-4">
+              <div className="text-sm text-gray-400">
+                A/B Test: {variant} {testConfig && `(${testConfig.testId})`}
+              </div>
+              <button
+                onClick={() => setShowAnalytics(!showAnalytics)}
+                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 rounded transition-colors"
+              >
+                {showAnalytics ? 'Hide' : 'Show'} Analytics
+              </button>
+              <button
+                onClick={() => setShowConverter(!showConverter)}
+                className="px-4 py-2 bg-green-600 hover:bg-green-700 rounded transition-colors"
+              >
+                {showConverter ? 'Hide' : 'Show'} Video Converter
+              </button>
+            </div>
+          </div>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
+      </header>
+
+      <div className="container mx-auto px-4 py-8">
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          {/* Main Player */}
+          <div className="lg:col-span-2">
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h2 className="text-xl font-semibold mb-4">{selectedVideo.title}</h2>
+              
+              <VideoPlayer
+                src={selectedVideo.url}
+                isHLS={selectedVideo.isHLS}
+                config={streamingConfig}
+                className="aspect-video"
+              />
+              
+              {/* Video Selection */}
+              <div className="mt-6">
+                <h3 className="text-lg font-medium mb-3">Select Video</h3>
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
+                  {SAMPLE_VIDEOS.map((video) => (
+                    <button
+                      key={video.id}
+                      onClick={() => handleVideoChange(video)}
+                      className={`p-3 rounded border text-left transition-colors ${
+                        selectedVideo.id === video.id
+                          ? 'border-red-500 bg-red-500 bg-opacity-10'
+                          : 'border-gray-600 hover:border-gray-500'
+                      }`}
+                    >
+                      <div className="font-medium">{video.title}</div>
+                      <div className="text-sm text-gray-400">
+                        {video.isHLS ? 'HLS Stream' : 'MP4 Video'}
+                      </div>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            </div>
+          </div>
+
+          {/* Sidebar */}
+          <div className="space-y-6">
+            {/* A/B Test Info */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">A/B Test Status</h3>
+              <div className="space-y-3">
+                <div>
+                  <div className="text-sm text-gray-400">Current Variant</div>
+                  <div className="font-medium">{variant}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Test ID</div>
+                  <div className="font-medium">{testConfig?.testId || 'N/A'}</div>
+                </div>
+                <div>
+                  <div className="text-sm text-gray-400">Features</div>
+                  <div className="space-y-1">
+                    {testConfig && Object.entries(testConfig.features).map(([feature, enabled]) => (
+                      <div key={feature} className="flex items-center space-x-2">
+                        <div className={`w-2 h-2 rounded-full ${enabled ? 'bg-green-500' : 'bg-gray-500'}`} />
+                        <span className="text-sm">{feature}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Streaming Config */}
+            <div className="bg-gray-800 rounded-lg p-6">
+              <h3 className="text-lg font-semibold mb-4">Streaming Config</h3>
+              <div className="space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Adaptive Bitrate:</span>
+                  <span>{streamingConfig.enableAdaptiveBitrate ? 'Enabled' : 'Disabled'}</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Max Bitrate:</span>
+                  <span>{Math.round(streamingConfig.maxBitrate / 1000)}k</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Min Bitrate:</span>
+                  <span>{Math.round(streamingConfig.minBitrate / 1000)}k</span>
+                </div>
+                <div className="flex justify-between">
+                  <span className="text-gray-400">Buffer Size:</span>
+                  <span>{streamingConfig.bufferSize}s</span>
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics */}
+            {showAnalytics && (
+              <div className="bg-gray-800 rounded-lg p-6">
+                <h3 className="text-lg font-semibold mb-4">Analytics Events</h3>
+                <div className="space-y-2 max-h-64 overflow-y-auto">
+                  {analyticsEvents.length === 0 ? (
+                    <div className="text-gray-400 text-sm">No events yet</div>
+                  ) : (
+                    analyticsEvents.slice(-10).map((event, index) => (
+                      <div key={index} className="text-xs bg-gray-700 p-2 rounded">
+                        <div className="font-medium">{event.eventType}</div>
+                        <div className="text-gray-400">
+                          {new Date(event.timestamp).toLocaleTimeString()}
+                        </div>
+                        {event.videoId && (
+                          <div className="text-gray-400">Video: {event.videoId}</div>
+                        )}
+                      </div>
+                    ))
+                  )}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* Video Converter Section */}
+        {showConverter && (
+          <div className="mt-8">
+            <VideoConverter />
+          </div>
+        )}
+      </div>
+
+      {/* Footer */}
+      <footer className="bg-gray-800 border-t border-gray-700 mt-12">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center text-gray-400">
+            <p>Web TV Player - Demonstrating Netflix-style streaming with A/B testing</p>
+            <p className="text-sm mt-2">
+              Built with Next.js, React, TypeScript, HLS.js, and Tailwind CSS
+            </p>
+          </div>
+        </div>
       </footer>
     </div>
   );
