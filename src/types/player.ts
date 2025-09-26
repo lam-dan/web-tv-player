@@ -66,6 +66,7 @@ export interface AnalyticsEvent {
   sessionId: string;
   volume?: number;
   isMuted?: boolean;
+  errorMessage?: string;
 }
 
 export interface ABTestConfig {
@@ -121,4 +122,130 @@ export interface VideoConversionOptions {
     start: number;
     end: number;
   };
+}
+
+// MSE (Media Source Extensions) interfaces
+export interface MSEConfig {
+  mimeType: string;
+  codecs: string;
+  bufferSize: number;
+  maxBufferLength: number;
+  minBufferLength: number;
+}
+
+export interface MSEBuffer {
+  start: number;
+  end: number;
+  data: ArrayBuffer;
+  timestamp: number;
+}
+
+export interface MSEMetrics {
+  bufferHealth: number;
+  bufferLength: number;
+  droppedFrames: number;
+  totalFrames: number;
+  bufferUnderruns: number;
+  bufferOverruns: number;
+}
+
+// EME (Encrypted Media Extensions) interfaces
+export interface EMEConfig {
+  keySystem: string;
+  initData: ArrayBuffer;
+  sessionType: MediaKeySessionType;
+  persistentState: 'required' | 'optional' | 'not-allowed';
+}
+
+export interface EMELicense {
+  license: ArrayBuffer;
+  sessionId: string;
+  expirationTime: number;
+  keyStatuses: MediaKeyStatusMap;
+}
+
+export interface EMEMetrics {
+  licenseRequests: number;
+  licenseResponses: number;
+  keyStatusChanges: number;
+  sessionErrors: number;
+  decryptionErrors: number;
+}
+
+// DASH (Dynamic Adaptive Streaming over HTTP) interfaces
+export interface DASHConfig {
+  manifestUrl: string;
+  autoStart: boolean;
+  autoPlay: boolean;
+  streaming: {
+    delay: {
+      liveDelay: number;
+      liveDelayFragmentCount: number;
+    };
+    abr: {
+      autoSwitchBitrate: boolean;
+      initialBitrate: number;
+      maxBitrate: number;
+      minBitrate: number;
+    };
+  };
+  debug: {
+    logLevel: number;
+  };
+}
+
+export interface DASHRepresentation {
+  id: string;
+  bandwidth: number;
+  width: number;
+  height: number;
+  codecs: string;
+  mimeType: string;
+  frameRate: number;
+  qualityRanking: number;
+}
+
+export interface DASHAdaptationSet {
+  id: string;
+  type: 'video' | 'audio' | 'text';
+  representations: DASHRepresentation[];
+  lang?: string;
+  roles?: string[];
+}
+
+export interface DASHPeriod {
+  id: string;
+  start: number;
+  duration: number;
+  adaptationSets: DASHAdaptationSet[];
+}
+
+export interface DASHManifest {
+  periods: DASHPeriod[];
+  duration: number;
+  isLive: boolean;
+  availabilityStartTime: number;
+  availabilityEndTime?: number;
+  suggestedPresentationDelay: number;
+  timeShiftBufferDepth: number;
+}
+
+export interface DASHMetrics {
+  currentRepresentation: DASHRepresentation | null;
+  bitrateSwitches: number;
+  bufferLevel: number;
+  bufferHealth: number;
+  droppedFrames: number;
+  totalFrames: number;
+  downloadTime: number;
+  throughput: number;
+  latency: number;
+  rebufferingEvents: number;
+  rebufferingTime: number;
+}
+
+export interface DASHEvent {
+  type: 'manifestLoaded' | 'representationChanged' | 'bufferLevelChanged' | 'error';
+  timestamp: number;
+  data: any;
 }

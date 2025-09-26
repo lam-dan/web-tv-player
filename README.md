@@ -2,7 +2,7 @@
 
 A Netflix-style streaming video player built with Next.js, React, and TypeScript. This application demonstrates the skills and technologies mentioned in the Netflix Software Engineer 4 - Web & TV Player job description.
 
-## 🚀 Features
+## Features
 
 ### Core Video Player
 - **HTML5 Video Support** with MSE (Media Source Extensions)
@@ -45,7 +45,7 @@ A Netflix-style streaming video player built with Next.js, React, and TypeScript
 - **Loading States** and error handling
 - **Hover Effects** and smooth transitions
 
-## 🛠️ Technologies Used
+## Technologies Used
 
 - **Next.js 15** - React framework with App Router
 - **React 19** - UI library with hooks
@@ -56,7 +56,7 @@ A Netflix-style streaming video player built with Next.js, React, and TypeScript
 - **Jest** - Testing framework
 - **Testing Library** - React component testing
 
-## 📦 Installation
+## Installation
 
 1. Clone the repository:
 ```bash
@@ -76,7 +76,7 @@ npm run dev
 
 4. Open [http://localhost:3000](http://localhost:3000) in your browser.
 
-## 🧪 Testing
+## Testing
 
 Run the test suite:
 ```bash
@@ -90,7 +90,7 @@ npm run test:watch
 npm run test:coverage
 ```
 
-## 🎯 Key Features Demonstrated
+## Key Features Demonstrated
 
 ### 1. Streaming Media Playback
 - HLS and MP4 video support
@@ -122,7 +122,7 @@ npm run test:coverage
 - Mock implementations for external dependencies
 - Coverage reporting
 
-## 🎮 Usage
+## Usage
 
 ### Basic Video Player
 ```tsx
@@ -167,7 +167,7 @@ trackPlaybackEvent('play', 'video-1', 0, quality);
 trackQualityMetrics('video-1', quality, bufferHealth, currentTime, playbackRate);
 ```
 
-## 🎨 UI Features
+## UI Features
 
 - **Dark Theme** with Netflix-inspired design
 - **Responsive Layout** that works on all screen sizes
@@ -176,14 +176,14 @@ trackQualityMetrics('video-1', quality, bufferHealth, currentTime, playbackRate)
 - **Loading States** with spinners and progress indicators
 - **Error Handling** with retry functionality
 
-## 📊 Sample Videos
+## Sample Videos
 
 The application includes sample videos for testing:
 - HLS streaming content
 - MP4 video files
 - Live streaming examples
 
-## 🔧 Configuration
+## Configuration
 
 ### Streaming Config
 ```typescript
@@ -208,7 +208,7 @@ interface ABTestConfig {
 }
 ```
 
-## 🚀 Deployment
+## Deployment
 
 Build the application for production:
 ```bash
@@ -216,7 +216,7 @@ npm run build
 npm start
 ```
 
-## 📈 Performance Optimizations
+## Performance Optimizations
 
 - **Lazy Loading** of video components
 - **Efficient State Management** with React hooks
@@ -224,7 +224,7 @@ npm start
 - **Memory Management** for video cleanup
 - **Optimized Re-renders** with proper dependency arrays
 
-## 🎯 Netflix Job Requirements Met
+## Netflix Job Requirements Met
 
 This project demonstrates all the key requirements from the Netflix job description:
 
@@ -237,6 +237,6 @@ This project demonstrates all the key requirements from the Netflix job descript
 ✅ **Cross-functional communication** - Well-documented, clean code  
 ✅ **Shipping software at scale** - Production-ready architecture  
 
-## 📝 License
+## License
 
 This project is for demonstration purposes and showcases skills relevant to the Netflix Software Engineer 4 - Web & TV Player position.

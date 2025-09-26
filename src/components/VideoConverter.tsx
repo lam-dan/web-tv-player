@@ -139,10 +139,11 @@ export const VideoConverter: React.FC<VideoConverterProps> = ({
 
         {/* File Selection */}
         <div className="mb-6">
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label htmlFor="video-file-input" className="block text-sm font-medium text-gray-700 mb-2">
             Select Video File
           </label>
           <input
+            id="video-file-input"
             ref={fileInputRef}
             type="file"
             accept="video/*"

@@ -2,7 +2,8 @@
 
 import React, { useEffect, memo } from 'react';
 import { useVideoPlayer } from '@/hooks/useVideoPlayer';
-import { StreamingConfig } from '@/types/player';
+// import { useDASH } from '@/hooks/useDASH';
+import { StreamingConfig, DASHConfig } from '@/types/player';
 import { PlayerControls } from './PlayerControls';
 import { QualitySelector } from './QualitySelector';
 import { ProgressBar } from './ProgressBar';
@@ -12,7 +13,9 @@ import { PlaybackRateControl } from './PlaybackRateControl';
 interface VideoPlayerProps {
   src: string;
   isHLS?: boolean;
+  isDASH?: boolean;
   config?: Partial<StreamingConfig>;
+  dashConfig?: Partial<DASHConfig>;
   className?: string;
 }
 
@@ -26,13 +29,42 @@ const defaultConfig: StreamingConfig = {
   analyticsEnabled: true,
 };
 
+const defaultDASHConfig: DASHConfig = {
+  manifestUrl: '',
+  autoStart: true,
+  autoPlay: false,
+  streaming: {
+    delay: {
+      liveDelay: 0,
+      liveDelayFragmentCount: 0
+    },
+    abr: {
+      autoSwitchBitrate: true,
+      initialBitrate: 1000000,
+      maxBitrate: 5000000,
+      minBitrate: 500000
+    }
+  },
+  debug: {
+    logLevel: 0
+  }
+};
+
 export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
   src,
   isHLS = true,
+  isDASH = false,
   config = {},
+  dashConfig = {},
   className = '',
 }) => {
   const playerConfig = { ...defaultConfig, ...config };
+  const dashPlayerConfig = { ...defaultDASHConfig, ...dashConfig, manifestUrl: src };
+  
+  // Use appropriate hook based on streaming protocol
+  const hlsPlayer = useVideoPlayer(playerConfig);
+  // const dashPlayer = useDASH(dashPlayerConfig);
+  
   const {
     videoRef,
     playerState,
@@ -44,7 +76,7 @@ export const VideoPlayer: React.FC<VideoPlayerProps> = memo(({
     setPlaybackRate,
     seekTo,
     toggleMute,
-  } = useVideoPlayer(playerConfig);
+  } = hlsPlayer;
 
   useEffect(() => {
     if (src) {

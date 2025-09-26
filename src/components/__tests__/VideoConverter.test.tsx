@@ -57,7 +57,7 @@ describe('VideoConverter', () => {
   it('shows file input for video selection', () => {
     render(<VideoConverter />);
     
-    const fileInput = screen.getByRole('textbox', { hidden: true });
+    const fileInput = screen.getByLabelText('Select Video File');
     expect(fileInput).toBeInTheDocument();
     expect(fileInput).toHaveAttribute('accept', 'video/*');
   });
@@ -66,7 +66,7 @@ describe('VideoConverter', () => {
     render(<VideoConverter />);
     
     const file = new File(['test video content'], 'test.mp4', { type: 'video/mp4' });
-    const fileInput = screen.getByRole('textbox', { hidden: true });
+    const fileInput = screen.getByLabelText('Select Video File');
     
     fireEvent.change(fileInput, { target: { files: [file] } });
     
@@ -75,37 +75,65 @@ describe('VideoConverter', () => {
     });
   });
 
-  it('shows quality preset options', () => {
+  it('shows quality preset options', async () => {
     render(<VideoConverter />);
     
-    const qualitySelect = screen.getByDisplayValue('Medium Quality');
-    expect(qualitySelect).toBeInTheDocument();
+    // First select a file to show conversion options
+    const file = new File(['test video content'], 'test.mp4', { type: 'video/mp4' });
+    const fileInput = screen.getByLabelText('Select Video File');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      const qualitySelect = screen.getByDisplayValue('Medium Quality');
+      expect(qualitySelect).toBeInTheDocument();
+    });
   });
 
-  it('shows output format options', () => {
+  it('shows output format options', async () => {
     render(<VideoConverter />);
     
-    const formatSelect = screen.getByDisplayValue('MP4');
-    expect(formatSelect).toBeInTheDocument();
+    // First select a file to show conversion options
+    const file = new File(['test video content'], 'test.mp4', { type: 'video/mp4' });
+    const fileInput = screen.getByLabelText('Select Video File');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      const formatSelect = screen.getByDisplayValue('MP4');
+      expect(formatSelect).toBeInTheDocument();
+    });
   });
 
-  it('toggles advanced options', () => {
+  it('toggles advanced options', async () => {
     render(<VideoConverter />);
     
-    const toggleButton = screen.getByText('Show Advanced Options');
-    fireEvent.click(toggleButton);
+    // First select a file to show conversion options
+    const file = new File(['test video content'], 'test.mp4', { type: 'video/mp4' });
+    const fileInput = screen.getByLabelText('Select Video File');
+    fireEvent.change(fileInput, { target: { files: [file] } });
     
-    expect(screen.getByText('Hide Advanced Options')).toBeInTheDocument();
-    expect(screen.getByText('Resolution Width')).toBeInTheDocument();
-    expect(screen.getByText('Resolution Height')).toBeInTheDocument();
-    expect(screen.getByText('Bitrate (kbps)')).toBeInTheDocument();
+    await waitFor(() => {
+      const toggleButton = screen.getByText('Show Advanced Options');
+      fireEvent.click(toggleButton);
+      
+      expect(screen.getByText('Hide Advanced Options')).toBeInTheDocument();
+      expect(screen.getByText('Resolution Width')).toBeInTheDocument();
+      expect(screen.getByText('Resolution Height')).toBeInTheDocument();
+      expect(screen.getByText('Bitrate (kbps)')).toBeInTheDocument();
+    });
   });
 
-  it('shows thumbnail extraction section', () => {
+  it('shows thumbnail extraction section', async () => {
     render(<VideoConverter />);
     
-    expect(screen.getByText('Extract Thumbnail')).toBeInTheDocument();
-    expect(screen.getByText('seconds')).toBeInTheDocument();
+    // First select a file to show conversion options
+    const file = new File(['test video content'], 'test.mp4', { type: 'video/mp4' });
+    const fileInput = screen.getByLabelText('Select Video File');
+    fireEvent.change(fileInput, { target: { files: [file] } });
+    
+    await waitFor(() => {
+      expect(screen.getByRole('heading', { name: 'Extract Thumbnail' })).toBeInTheDocument();
+      expect(screen.getByText('seconds')).toBeInTheDocument();
+    });
   });
 
   it('has convert and reset buttons', () => {
@@ -119,7 +147,7 @@ describe('VideoConverter', () => {
     render(<VideoConverter />);
     
     const file = new File(['test video content'], 'test.webm', { type: 'video/webm' });
-    const fileInput = screen.getByRole('textbox', { hidden: true });
+    const fileInput = screen.getByLabelText('Select Video File');
     
     fireEvent.change(fileInput, { target: { files: [file] } });
     
@@ -128,13 +156,20 @@ describe('VideoConverter', () => {
     });
   });
 
-  it('updates conversion options when changed', () => {
+  it('updates conversion options when changed', async () => {
     render(<VideoConverter />);
     
-    const qualitySelect = screen.getByDisplayValue('Medium Quality');
-    fireEvent.change(qualitySelect, { target: { value: 'high' } });
+    // First select a file to show conversion options
+    const file = new File(['test video content'], 'test.mp4', { type: 'video/mp4' });
+    const fileInput = screen.getByLabelText('Select Video File');
+    fireEvent.change(fileInput, { target: { files: [file] } });
     
-    expect(qualitySelect).toHaveValue('high');
+    await waitFor(() => {
+      const qualitySelect = screen.getByDisplayValue('Medium Quality');
+      fireEvent.change(qualitySelect, { target: { value: 'high' } });
+      
+      expect(qualitySelect).toHaveValue('high');
+    });
   });
 
   it('shows FFmpeg status correctly', () => {

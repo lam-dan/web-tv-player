@@ -115,7 +115,6 @@ export const useAnalytics = (config: AnalyticsConfig = defaultConfig) => {
   ) => {
     trackEvent('error', videoId, {
       currentTime,
-      eventType: errorType,
       errorMessage,
     });
   }, [trackEvent]);

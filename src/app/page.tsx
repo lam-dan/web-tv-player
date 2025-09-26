@@ -3,6 +3,8 @@
 import React, { useState, useEffect } from 'react';
 import { VideoPlayer } from '@/components/VideoPlayer';
 import { VideoConverter } from '@/components/VideoConverter';
+import { StressTestDashboard } from '@/components/StressTestDashboard';
+import AdaptiveStreamingDashboard from '@/components/AdaptiveStreamingDashboard';
 import { useABTesting } from '@/hooks/useABTesting';
 import { useAnalytics } from '@/hooks/useAnalytics';
 import { StreamingConfig } from '@/types/player';
@@ -13,18 +15,28 @@ const SAMPLE_VIDEOS = [
     title: 'Sample Video 1 - MP4 (Reliable)',
     url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/BigBuckBunny.mp4',
     isHLS: false,
+    isDASH: false,
   },
   {
     id: 'sample-2', 
     title: 'Sample Video 2 - HLS Stream',
     url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.m3u8',
     isHLS: true,
+    isDASH: false,
   },
   {
     id: 'sample-3',
     title: 'Sample Video 3 - MP4 (Elephants Dream)',
     url: 'https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/ElephantsDream.mp4',
     isHLS: false,
+    isDASH: false,
+  },
+  {
+    id: 'sample-4',
+    title: 'Sample Video 4 - DASH Stream',
+    url: 'https://demo.unified-streaming.com/k8s/features/stable/video/tears-of-steel/tears-of-steel.ism/.mpd',
+    isHLS: false,
+    isDASH: true,
   },
 ];
 
@@ -32,6 +44,8 @@ export default function Home() {
   const [selectedVideo, setSelectedVideo] = useState(SAMPLE_VIDEOS[0]);
   const [showAnalytics, setShowAnalytics] = useState(false);
   const [showConverter, setShowConverter] = useState(false);
+  const [showStressTest, setShowStressTest] = useState(false);
+  const [showAdaptiveStreaming, setShowAdaptiveStreaming] = useState(false);
   
   // A/B Testing
   const { variant, testConfig, getFeatureFlag, trackEvent } = useABTesting('player_ui_v2');
@@ -93,6 +107,18 @@ export default function Home() {
               >
                 {showConverter ? 'Hide' : 'Show'} Video Converter
               </button>
+              <button
+                onClick={() => setShowStressTest(!showStressTest)}
+                className="px-4 py-2 bg-purple-600 hover:bg-purple-700 rounded transition-colors"
+              >
+                {showStressTest ? 'Hide' : 'Show'} Stress Test
+              </button>
+              <button
+                onClick={() => setShowAdaptiveStreaming(!showAdaptiveStreaming)}
+                className="px-4 py-2 bg-orange-600 hover:bg-orange-700 rounded transition-colors"
+              >
+                {showAdaptiveStreaming ? 'Hide' : 'Show'} Adaptive Streaming
+              </button>
             </div>
           </div>
         </div>
@@ -108,6 +134,7 @@ export default function Home() {
               <VideoPlayer
                 src={selectedVideo.url}
                 isHLS={selectedVideo.isHLS}
+                isDASH={selectedVideo.isDASH}
                 config={streamingConfig}
                 className="aspect-video"
               />
@@ -128,7 +155,7 @@ export default function Home() {
                     >
                       <div className="font-medium">{video.title}</div>
                       <div className="text-sm text-gray-400">
-                        {video.isHLS ? 'HLS Stream' : 'MP4 Video'}
+                        {video.isDASH ? 'DASH Stream' : video.isHLS ? 'HLS Stream' : 'MP4 Video'}
                       </div>
                     </button>
                   ))}
@@ -218,6 +245,38 @@ export default function Home() {
         {showConverter && (
           <div className="mt-8">
             <VideoConverter />
+          </div>
+        )}
+
+        {/* Stress Testing Section */}
+        {showStressTest && (
+          <div className="mt-8">
+            <StressTestDashboard />
+          </div>
+        )}
+
+        {/* Adaptive Streaming Section */}
+        {showAdaptiveStreaming && (
+          <div className="mt-8">
+            <AdaptiveStreamingDashboard 
+              videoElement={null} // This would be connected to the actual video element
+              onQualityChange={(quality) => {
+                trackEvent('quality_changed', { quality });
+              }}
+              onRebuffering={(event) => {
+                trackEvent('rebuffering', { 
+                  duration: event.duration, 
+                  timestamp: event.timestamp 
+                });
+              }}
+              onNetworkChange={(metrics) => {
+                trackEvent('network_change', { 
+                  bandwidth: metrics.bandwidth,
+                  latency: metrics.latency,
+                  connectionType: metrics.connectionType
+                });
+              }}
+            />
           </div>
         )}
       </div>
