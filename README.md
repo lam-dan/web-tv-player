@@ -1,7 +1,6 @@
 # Web TV Player
 
-A Netflix-style streaming video player built with Next.js, React, and TypeScript. This application demonstrates the skills and technologies mentioned in the Netflix Software Engineer 4 - Web & TV Player job description.
-
+A Netflix-style streaming video player built with Next.js, React, and TypeScript.
 ## Features
 
 ### Core Video Player
